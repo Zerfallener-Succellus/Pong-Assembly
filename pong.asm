@@ -4,13 +4,17 @@ STACK ENDS
 
 DATA SEGMENT PARA 'DATA'
 
-    TIME_AUX   DB 0      ;variable used when checking if time has changed
+    WINDOW_W      DW 140h    ;width of the window (320 pixels)
+    WINDOW_H      DW 0C8h    ;height of the window (200 pixels)
+    WINDOW_BOUNDS DW 6       ;variable used to check colisions early
 
-    BALL_X     DW 0Ah    ;x position (column) of the bal
-    BALL_Y     DW 0Ah    ;y position (line) of the ball
-    BALL_SIZE  DW 04h    ;size of the ball (how many pixels does the ball have in with and heigth)
-    BALL_VEL_X DW 05h    ;X (horizontal) velocity of the ball
-    BALL_VEL_Y DW 02h    ;Y (verticaltal) velocity of the ball
+    TIME_AUX      DB 0       ;variable used when checking if time has changed
+
+    BALL_X        DW 0Ah     ;x position (column) of the bal
+    BALL_Y        DW 0Ah     ;y position (line) of the ball
+    BALL_SIZE     DW 04h     ;size of the ball (how many pixels does the ball have in with and heigth)
+    BALL_VEL_X    DW 05h     ;X (horizontal) velocity of the ball
+    BALL_VEL_Y    DW 02h     ;Y (verticaltal) velocity of the ball
 
 DATA ENDS
 
@@ -58,10 +62,41 @@ MAIN ENDP
 
 MOVE_BALL PROC NEAR
 
-                         MOV    AX,BALL_VEL_X
-                         ADD    BALL_X,AX
-                         MOV    AX,BALL_VEL_Y
-                         ADD    BALL_Y,AX
+                         MOV    AX,BALL_VEL_X               ;--
+                         ADD    BALL_X,AX                   ;move the ball horizontaly
+
+
+                         MOV    AX,WINDOW_BOUNDS
+                         CMP    BALL_X,AX                   ;--
+                         JL     NEG_VEL_X                   ;BALL_X < 0 + WINDOW_BOUNDS (Y -> collided)
+                         
+
+                         MOV    AX,WINDOW_W                 ;--
+                         SUB    AX,BALL_SIZE                ;sub the ball size to not pass the wall
+                         SUB    AX,WINDOW_BOUNDS
+                         CMP    BALL_X,AX                   ;BALL_X > WINDOW_W - BALL_SIZE - WINDOW_BOUNDS (Y -> colided)
+                         JG     NEG_VEL_X                   ;--
+                         MOV    AX,BALL_VEL_Y               ;--
+                         ADD    BALL_Y,AX                   ;move the ball verticaly
+
+                         MOV    AX,WINDOW_BOUNDS
+                         CMP    BALL_Y,AX                   ;--
+                         JL     NEG_VEL_Y                   ;BALL_Y < 0 + WINDOW_BOUNDS (Y -> collided)
+                         
+                         MOV    AX,WINDOW_H                 ;--
+                         SUB    AX,BALL_SIZE                ;sub the ball size to not pass the wall
+                         SUB    AX,WINDOW_BOUNDS
+                         CMP    BALL_Y,AX                   ;BALL_Y > WINDOW_H - BALL_SIZE - WINDOW_BOUNDS (Y -> colided)
+                         JG     NEG_VEL_Y                   ;--
+
+                         RET
+    NEG_VEL_X:           
+                         NEG    BALL_VEL_X                  ;BALL_VEL_X = - BALL_VEL_X
+                         RET
+
+    NEG_VEL_Y:           
+                         NEG    BALL_VEL_Y                  ;BALL_VEL_Y = - BALL_VEL_Y
+                         RET
 
 MOVE_BALL ENDP
 
