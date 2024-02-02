@@ -4,17 +4,19 @@ STACK ENDS
 
 DATA SEGMENT PARA 'DATA'
 
-    WINDOW_W      DW 140h    ;width of the window (320 pixels)
-    WINDOW_H      DW 0C8h    ;height of the window (200 pixels)
-    WINDOW_BOUNDS DW 6       ;variable used to check colisions early
+    WINDOW_W        DW 140h    ;width of the window (320 pixels)
+    WINDOW_H        DW 0C8h    ;height of the window (200 pixels)
+    WINDOW_BOUNDS   DW 6       ;variable used to check colisions early
 
-    TIME_AUX      DB 0       ;variable used when checking if time has changed
+    TIME_AUX        DB 0       ;variable used when checking if time has changed
 
-    BALL_X        DW 0Ah     ;x position (column) of the bal
-    BALL_Y        DW 0Ah     ;y position (line) of the ball
-    BALL_SIZE     DW 04h     ;size of the ball (how many pixels does the ball have in with and heigth)
-    BALL_VEL_X    DW 05h     ;X (horizontal) velocity of the ball
-    BALL_VEL_Y    DW 02h     ;Y (verticaltal) velocity of the ball
+    BALL_ORIGINAL_X DW 0A0h
+    BALL_ORIGINAL_Y DW 64h
+    BALL_X          DW 0A0h    ;x position (column) of the bal
+    BALL_Y          DW 64h     ;y position (line) of the ball
+    BALL_SIZE       DW 04h     ;size of the ball (how many pixels does the ball have in with and heigth)
+    BALL_VEL_X      DW 05h     ;X (horizontal) velocity of the ball
+    BALL_VEL_Y      DW 02h     ;Y (verticaltal) velocity of the ball
 
 DATA ENDS
 
@@ -63,76 +65,53 @@ MAIN ENDP
 MOVE_BALL PROC NEAR
 
                          MOV    AX,BALL_VEL_X               ;--
-                         ADD    BALL_X,AX                   ;move the ball horizontally
+                         ADD    BALL_X,AX                   ;move the ball horizontaly
+
 
                          MOV    AX,WINDOW_BOUNDS
                          CMP    BALL_X,AX                   ;--
-                         JL     NEG_VEL_X_ADJUST            ;BALL_X < WINDOW_BOUNDS (Y -> collided)
+                         JL     RESET_POSITION              ;BALL_X < 0 + WINDOW_BOUNDS (Y -> collided)
+                         
 
                          MOV    AX,WINDOW_W                 ;--
-                         SUB    AX,BALL_SIZE                ;subtract the ball size to not pass the wall
+                         SUB    AX,BALL_SIZE                ;sub the ball size to not pass the wall
                          SUB    AX,WINDOW_BOUNDS
-                         CMP    BALL_X,AX                   ;BALL_X > WINDOW_W - BALL_SIZE - WINDOW_BOUNDS (Y -> collided)
-                         JG     NEG_VEL_X_ADJUST            ;--
-
+                         CMP    BALL_X,AX                   ;BALL_X > WINDOW_W - BALL_SIZE - WINDOW_BOUNDS (Y -> colided)
+                         JG     RESET_POSITION              ;--
                          MOV    AX,BALL_VEL_Y               ;--
-                         ADD    BALL_Y,AX                   ;move the ball vertically
+                         ADD    BALL_Y,AX                   ;move the ball verticaly
 
                          MOV    AX,WINDOW_BOUNDS
                          CMP    BALL_Y,AX                   ;--
-                         JL     NEG_VEL_Y_ADJUST            ;BALL_Y < WINDOW_BOUNDS (Y -> collided)
-    
+                         JL     NEG_VEL_Y                   ;BALL_Y < 0 + WINDOW_BOUNDS (Y -> collided)
+                         
                          MOV    AX,WINDOW_H                 ;--
-                         SUB    AX,BALL_SIZE                ;subtract the ball size to not pass the wall
+                         SUB    AX,BALL_SIZE                ;sub the ball size to not pass the wall
                          SUB    AX,WINDOW_BOUNDS
-                         CMP    BALL_Y,AX                   ;BALL_Y > WINDOW_H - BALL_SIZE - WINDOW_BOUNDS (Y -> collided)
-                         JG     NEG_VEL_Y_ADJUST            ;--
+                         CMP    BALL_Y,AX                   ;BALL_Y > WINDOW_H - BALL_SIZE - WINDOW_BOUNDS (Y -> colided)
+                         JG     NEG_VEL_Y                   ;--
 
                          RET
-
-    NEG_VEL_X_ADJUST:    
-                         NEG    BALL_VEL_X                  ;Invert horizontal velocity
-    ; Adjust BALL_X to be within bounds
-                         MOV    AX, WINDOW_W
-                         SUB    AX, BALL_SIZE
-                         CMP    BALL_X, AX
-                         JLE    ADJUST_X_LOWER
-                         MOV    BALL_X, AX                  ; Adjust to right edge
-                         JMP    SHORT EXIT_MOVE
-
-    ADJUST_X_LOWER:      
-                         MOV    AX, WINDOW_BOUNDS
-                         CMP    BALL_X, AX
-                         JGE    EXIT_MOVE
-                         MOV    AX, WINDOW_BOUNDS
-                         MOV    BALL_X, AX                  ; Adjust to left edge
-
-    EXIT_MOVE:           
+    RESET_POSITION:      
+                         CALL   RESET_BALL_POSITION         ;call the process reset
                          RET
 
-    NEG_VEL_Y_ADJUST:    
-                         NEG    BALL_VEL_Y                  ;Invert vertical velocity
-    ; Adjust BALL_Y to be within bounds
-                         MOV    AX,WINDOW_H
-                         SUB    AX, BALL_SIZE
-                         CMP    BALL_Y,AX
-                         JLE    ADJUST_Y_LOWER
-                         MOV    BALL_Y,AX                   ; Adjust to bottom edge
-                         JMP    SHORT EXIT_MOVE_Y
-
-    ADJUST_Y_LOWER:      
-                         MOV    AX, WINDOW_BOUNDS
-                         CMP    BALL_Y,AX
-                         JGE    EXIT_MOVE_Y
-                         MOV    AX, WINDOW_BOUNDS
-                         MOV    BALL_Y,AX                   ; Adjust to top edge
-
-    EXIT_MOVE_Y:         
+    NEG_VEL_Y:           
+                         NEG    BALL_VEL_Y                  ;BALL_VEL_Y = - BALL_VEL_Y
                          RET
 
 MOVE_BALL ENDP
 
+RESET_BALL_POSITION PROC NEAR                               ;make the ball come back to the inicial pos
 
+                         MOV    AX,BALL_ORIGINAL_X
+                         MOV    BALL_X,AX
+
+                         MOV    AX,BALL_ORIGINAL_Y
+                         MOV    BALL_Y,AX
+
+                         RET
+RESET_BALL_POSITION ENDP
 
 DRAW_BALL PROC NEAR
 
