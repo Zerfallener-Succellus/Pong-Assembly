@@ -42,6 +42,7 @@ MAIN PROC FAR
     ;if isn't, then drawn, move,etc.
 
                          MOV    TIME_AUX,DL                 ;update the time
+                         INC    BALL_X
                          CALL   DRAW_BALL                   ;calls the process of drawing the
 
                          JMP    CHECK_TIME                  ;after everthing checks time again
