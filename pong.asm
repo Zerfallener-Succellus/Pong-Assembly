@@ -4,11 +4,13 @@ STACK ENDS
 
 DATA SEGMENT PARA 'DATA'
 
-    TIME_AUX  DB 0      ;variable used when checking if time has changed
+    TIME_AUX   DB 0      ;variable used when checking if time has changed
 
-    BALL_X    DW 0Ah    ;x position (column) of the bal
-    BALL_Y    DW 0Ah    ;y position (line) of the ball
-    BALL_SIZE DW 04h    ;size of the ball (how many pixels does the ball have in with and heigth)
+    BALL_X     DW 0Ah    ;x position (column) of the bal
+    BALL_Y     DW 0Ah    ;y position (line) of the ball
+    BALL_SIZE  DW 04h    ;size of the ball (how many pixels does the ball have in with and heigth)
+    BALL_VEL_X DW 05h    ;X (horizontal) velocity of the ball
+    BALL_VEL_Y DW 02h    ;Y (verticaltal) velocity of the ball
 
 DATA ENDS
 
@@ -42,7 +44,9 @@ MAIN PROC FAR
     ;if isn't, then drawn, move,etc.
 
                          MOV    TIME_AUX,DL                 ;update the time
-                         INC    BALL_X
+
+                         CALL   CLR_SCR                     ;paint the screen black again after update
+                         CALL   MOVE_BALL                   ;calls the procedimento to move the ball
                          CALL   DRAW_BALL                   ;calls the process of drawing the
 
                          JMP    CHECK_TIME                  ;after everthing checks time again
@@ -50,6 +54,17 @@ MAIN PROC FAR
                          RET
 
 MAIN ENDP
+
+
+MOVE_BALL PROC NEAR
+
+                         MOV    AX,BALL_VEL_X
+                         ADD    BALL_X,AX
+                         MOV    AX,BALL_VEL_Y
+                         ADD    BALL_Y,AX
+
+MOVE_BALL ENDP
+
 
 DRAW_BALL PROC NEAR
 
@@ -79,6 +94,18 @@ DRAW_BALL PROC NEAR
 
                          RET
 DRAW_BALL ENDP
+
+CLR_SCR PROC NEAR
+                         MOV    AX, 0A000h                  ; Set the video memory segment to 0A000h
+                         MOV    ES, AX
+                         MOV    DI, 0                       ; ES:0 is the start of the framebuffer
+                         MOV    CX, 7D00h                   ; Store the total number of bytes required for mode 0Dh (320x200 at 16 colors)
+                         CLD
+                         XOR    AX, AX
+                         REP    STOSW                       ; zero CX * 2 bytes at ES:DI
+
+                         RET
+CLR_SCR ENDP
 
 CODE ENDS
 END
