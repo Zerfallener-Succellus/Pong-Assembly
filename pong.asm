@@ -62,73 +62,73 @@ MAIN ENDP
 
 MOVE_BALL PROC NEAR
 
-    MOV    AX,BALL_VEL_X               ;--
-    ADD    BALL_X,AX                   ;move the ball horizontally
+                         MOV    AX,BALL_VEL_X               ;--
+                         ADD    BALL_X,AX                   ;move the ball horizontally
 
-    MOV    AX,WINDOW_BOUNDS
-    CMP    BALL_X,AX                   ;--
-    JL     NEG_VEL_X_ADJUST            ;BALL_X < WINDOW_BOUNDS (Y -> collided)
+                         MOV    AX,WINDOW_BOUNDS
+                         CMP    BALL_X,AX                   ;--
+                         JL     NEG_VEL_X_ADJUST            ;BALL_X < WINDOW_BOUNDS (Y -> collided)
 
-    MOV    AX,WINDOW_W                 ;--
-    SUB    AX,BALL_SIZE                ;subtract the ball size to not pass the wall
-    SUB    AX,WINDOW_BOUNDS
-    CMP    BALL_X,AX                   ;BALL_X > WINDOW_W - BALL_SIZE - WINDOW_BOUNDS (Y -> collided)
-    JG     NEG_VEL_X_ADJUST            ;--
+                         MOV    AX,WINDOW_W                 ;--
+                         SUB    AX,BALL_SIZE                ;subtract the ball size to not pass the wall
+                         SUB    AX,WINDOW_BOUNDS
+                         CMP    BALL_X,AX                   ;BALL_X > WINDOW_W - BALL_SIZE - WINDOW_BOUNDS (Y -> collided)
+                         JG     NEG_VEL_X_ADJUST            ;--
 
-    MOV    AX,BALL_VEL_Y               ;--
-    ADD    BALL_Y,AX                   ;move the ball vertically
+                         MOV    AX,BALL_VEL_Y               ;--
+                         ADD    BALL_Y,AX                   ;move the ball vertically
 
-    MOV    AX,WINDOW_BOUNDS
-    CMP    BALL_Y,AX                   ;--
-    JL     NEG_VEL_Y_ADJUST            ;BALL_Y < WINDOW_BOUNDS (Y -> collided)
+                         MOV    AX,WINDOW_BOUNDS
+                         CMP    BALL_Y,AX                   ;--
+                         JL     NEG_VEL_Y_ADJUST            ;BALL_Y < WINDOW_BOUNDS (Y -> collided)
     
-    MOV    AX,WINDOW_H                 ;--
-    SUB    AX,BALL_SIZE                ;subtract the ball size to not pass the wall
-    SUB    AX,WINDOW_BOUNDS
-    CMP    BALL_Y,AX                   ;BALL_Y > WINDOW_H - BALL_SIZE - WINDOW_BOUNDS (Y -> collided)
-    JG     NEG_VEL_Y_ADJUST            ;--
+                         MOV    AX,WINDOW_H                 ;--
+                         SUB    AX,BALL_SIZE                ;subtract the ball size to not pass the wall
+                         SUB    AX,WINDOW_BOUNDS
+                         CMP    BALL_Y,AX                   ;BALL_Y > WINDOW_H - BALL_SIZE - WINDOW_BOUNDS (Y -> collided)
+                         JG     NEG_VEL_Y_ADJUST            ;--
 
-    RET
+                         RET
 
-NEG_VEL_X_ADJUST:
-    NEG    BALL_VEL_X                  ;Invert horizontal velocity
+    NEG_VEL_X_ADJUST:    
+                         NEG    BALL_VEL_X                  ;Invert horizontal velocity
     ; Adjust BALL_X to be within bounds
-    MOV    AX, WINDOW_W
-    SUB    AX, BALL_SIZE
-    CMP    BALL_X, AX
-    JLE    ADJUST_X_LOWER
-    MOV    BALL_X, AX                  ; Adjust to right edge
-    JMP    SHORT EXIT_MOVE
+                         MOV    AX, WINDOW_W
+                         SUB    AX, BALL_SIZE
+                         CMP    BALL_X, AX
+                         JLE    ADJUST_X_LOWER
+                         MOV    BALL_X, AX                  ; Adjust to right edge
+                         JMP    SHORT EXIT_MOVE
 
-ADJUST_X_LOWER:
-    MOV    AX, WINDOW_BOUNDS
-    CMP    BALL_X, AX
-    JGE    EXIT_MOVE
-    MOV    AX, WINDOW_BOUNDS
-    MOV    BALL_X, AX       ; Adjust to left edge
+    ADJUST_X_LOWER:      
+                         MOV    AX, WINDOW_BOUNDS
+                         CMP    BALL_X, AX
+                         JGE    EXIT_MOVE
+                         MOV    AX, WINDOW_BOUNDS
+                         MOV    BALL_X, AX                  ; Adjust to left edge
 
-EXIT_MOVE:
-    RET
+    EXIT_MOVE:           
+                         RET
 
-NEG_VEL_Y_ADJUST:
-    NEG    BALL_VEL_Y                  ;Invert vertical velocity
+    NEG_VEL_Y_ADJUST:    
+                         NEG    BALL_VEL_Y                  ;Invert vertical velocity
     ; Adjust BALL_Y to be within bounds
-    MOV    AX,WINDOW_H
-    SUB    AX, BALL_SIZE
-    CMP    BALL_Y,AX
-    JLE    ADJUST_Y_LOWER
-    MOV    BALL_Y,AX                  ; Adjust to bottom edge
-    JMP    SHORT EXIT_MOVE_Y
+                         MOV    AX,WINDOW_H
+                         SUB    AX, BALL_SIZE
+                         CMP    BALL_Y,AX
+                         JLE    ADJUST_Y_LOWER
+                         MOV    BALL_Y,AX                   ; Adjust to bottom edge
+                         JMP    SHORT EXIT_MOVE_Y
 
-ADJUST_Y_LOWER:
-    MOV    AX, WINDOW_BOUNDS
-    CMP    BALL_Y,AX
-    JGE    EXIT_MOVE_Y
-    MOV    AX, WINDOW_BOUNDS
-    MOV    BALL_Y,AX       ; Adjust to top edge
+    ADJUST_Y_LOWER:      
+                         MOV    AX, WINDOW_BOUNDS
+                         CMP    BALL_Y,AX
+                         JGE    EXIT_MOVE_Y
+                         MOV    AX, WINDOW_BOUNDS
+                         MOV    BALL_Y,AX                   ; Adjust to top edge
 
-EXIT_MOVE_Y:
-    RET
+    EXIT_MOVE_Y:         
+                         RET
 
 MOVE_BALL ENDP
 
